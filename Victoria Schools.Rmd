@@ -1,0 +1,41 @@
+---
+title: "Schools in Victoria"
+author: "Lindy Woodburn"
+date: "2 March 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r loadData, echo=FALSE}
+d <- read.csv("../../coursera/dv212-allschoolslist2016.csv")
+d.primary <- d[d$School_Type=="Primary",]
+d.secondary <- d[d$School_Type=="Secondary",]
+
+library(leaflet)
+df <- data.frame(lat = d$Y,
+                 lng = d$X)
+df.primary <- data.frame(lat = d.primary$Y,
+                 lng = d.primary$X)
+df.secondary <- data.frame(lat = d.secondary$Y,
+                 lng = d.secondary$X)
+# df %>%
+#   leaflet() %>%
+#   addTiles() %>%
+#   addMarkers(popup = d$School_Name, clusterOptions = markerClusterOptions())
+
+leaflet() %>%
+      addTiles() %>%
+      addMarkers(data=df.primary, group="Primary", popup = d.primary$School_Name, clusterOptions = markerClusterOptions()) %>%
+      addMarkers(data=df.secondary, group="Secondary", popup = d.secondary$School_Name, clusterOptions = markerClusterOptions()) %>%
+      addLayersControl(
+      overlayGroups = c("Primary", "Secondary"),
+      options = layersControlOptions(collapsed = FALSE))
+
+```
+
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
