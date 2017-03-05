@@ -1,9 +1,24 @@
 ---
-title: "Schools in Victoria"
-author: "Lindy Woodburn"
-date: "2 March 2017"
+title: "Primary and Secondary Schools in Victoria"
+date: "5 March 2017"
 output: html_document
 ---
+
+<style>
+   h1, h1.title{
+    color: #0000A0;
+    font-weight: bold;
+    text-align: left;
+    font-size:160%;
+    }
+    h4{
+    font-size:90%;
+    }
+</style>
+
+There are over 2000 primary and secondary schools in Victoria, Australia.  
+To find out more information about a school, click on the school's marker.
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -11,9 +26,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r loadData, echo=FALSE}
-d <- read.csv("../../coursera/dv212-allschoolslist2016.csv")
+d <- read.csv("../../coursera/dv212-allschoolslist2016.csv", stringsAsFactors = FALSE)
+d$label <- paste0("<b>",d$School_Name,"</b><br>",
+                  d$Address_Line_1,"<br>",d$Address_Town,
+                  "<br>Contact: ",d$Full_Phone_No,"
+                  <br>Sector: ",d$Education_Sector, 
+                  "<br>Type: ",d$School_Type,
+                  "<br>LGA: ",d$LGA_Name)
 d.primary <- d[d$School_Type=="Primary",]
-d.secondary <- d[d$School_Type=="Secondary",]
+d.secondary <- d[d$School_Type %in% c("Secondary","Pri/Sec"),]
 
 library(leaflet)
 df <- data.frame(lat = d$Y,
@@ -22,20 +43,37 @@ df.primary <- data.frame(lat = d.primary$Y,
                  lng = d.primary$X)
 df.secondary <- data.frame(lat = d.secondary$Y,
                  lng = d.secondary$X)
-# df %>%
-#   leaflet() %>%
-#   addTiles() %>%
-#   addMarkers(popup = d$School_Name, clusterOptions = markerClusterOptions())
 
-leaflet() %>%
+
+primaryIcon <- makeIcon(
+  iconUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Nuvola_apps_edu_miscellaneous_Cyrilic.svg/128px-Nuvola_apps_edu_miscellaneous_Cyrilic.svg.png",
+  iconWidth = 31*215/230, iconHeight = 31,
+  iconAnchorX = 31*215/230/2, iconAnchorY = 16
+)
+secondaryIcon <- makeIcon(
+  iconUrl = "https://upload.wikimedia.org/wikipedia/commons/9/93/Books-aj.svg_aj_ashton_01g.png",
+  iconWidth = 31*215/230, iconHeight = 31,
+  iconAnchorX = 31*215/230/2, iconAnchorY = 16
+)
+
+html_legend <- "<b>School Type</b><br><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Nuvola_apps_edu_miscellaneous_Cyrilic.svg/128px-Nuvola_apps_edu_miscellaneous_Cyrilic.svg.png'>Primary<br/>
+<img src='https://upload.wikimedia.org/wikipedia/commons/9/93/Books-aj.svg_aj_ashton_01g.png'>Secondary"
+
+map <- leaflet() %>%
       addTiles() %>%
-      addMarkers(data=df.primary, group="Primary", popup = d.primary$School_Name, clusterOptions = markerClusterOptions()) %>%
-      addMarkers(data=df.secondary, group="Secondary", popup = d.secondary$School_Name, clusterOptions = markerClusterOptions()) %>%
+      addMarkers(data=df.primary, icon=primaryIcon, group="Primary", popup = d.primary$label, clusterOptions = markerClusterOptions()) %>%
+      addMarkers(data=df.secondary, icon=secondaryIcon, group="Secondary", popup = d.secondary$label, clusterOptions = markerClusterOptions()) %>%
       addLayersControl(
-      overlayGroups = c("Primary", "Secondary"),
-      options = layersControlOptions(collapsed = FALSE))
-
+      overlayGroups = c("Primary","Secondary"),
+      options = layersControlOptions(collapsed = FALSE)) 
+map
 ```
+
+
+<br><br> 
+
+The data for this map was sourced from "Victorian School Locations - 2015" data available 
+at data.vic.gov.au: [https://www.data.vic.gov.au/data/dataset/victorian-schools-location-2015](https://www.data.vic.gov.au/data/dataset/victorian-schools-location-2015).
 
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
